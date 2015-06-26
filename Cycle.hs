@@ -15,7 +15,6 @@ where
 
 import Data.List (tails, inits, genericLength, nub)
 import Data.Set (Set, fromList, empty, member, insert, size)
-import Control.Applicative (liftA2)
 
 newtype Cycle a = Cycle [a]
 
