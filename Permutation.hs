@@ -2,14 +2,17 @@
 module Permutation(
     Permutation(Permute),
     cyclicPermutation,
+    toPermutation,
+    permutee,
     disjComp,
     generatePermutation,
     applyPermutation,
     simplifyPermutation, -- do I want to export this?
+    emptyPermutation,
     cycleType,
     cycleGenericType,
     inversePermutation,
-    conjugateBy
+    conjugatedBy
 )
 where
 
@@ -25,6 +28,9 @@ instance Show a => Show (Permutation a) where
 
 cyclicPermutation :: Cycle a -> Permutation a
 cyclicPermutation = Permute . singleton
+
+toPermutation :: Ord a => [[a]] -> Permutation a
+toPermutation = mconcat . fmap (cyclicPermutation . toCycle)
 
 permutee :: Ord a => Permutation a -> Set a
 permutee = foldr (union . cyclee) empty . getCycles
@@ -44,9 +50,11 @@ applyPermutation (Permute p) x = foldr applyCycle x p
 simplifyPermutation :: Ord a => Permutation a -> Permutation a
 simplifyPermutation = liftA2 generatePermutation applyPermutation permutee
 
+emptyPermutation = Permute empty
+
 instance Ord a => Monoid (Permutation a) where
     mappend p q = generatePermutation (applyPermutation p . applyPermutation q) (permutee p `union` permutee q)
-    mempty = Permute empty
+    mempty = emptyPermutation
     mconcat ps = generatePermutation (foldr ((.) . applyPermutation) id ps) (unions $ fmap permutee ps)
 
 -- The format of these relies on the implementation of Ord for Cycle
@@ -59,5 +67,5 @@ cycleGenericType = fmap cycleGenericLength . toAscList . getCycles
 inversePermutation :: Ord a => Permutation a -> Permutation a
 inversePermutation (Permute p) = Permute $ map inverseCycle p
 
-conjugateBy :: Ord a => Permutation a -> Permutation a -> Permutation a
-conjugateBy p q = mconcat [inversePermutation p, q, p]
+conjugatedBy :: Ord a => Permutation a -> Permutation a -> Permutation a
+conjugatedBy p q = mconcat [inversePermutation q, p, q]
