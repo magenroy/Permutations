@@ -26,6 +26,13 @@ newtype Permutation a = Permute {getCycles :: Set (Cycle a)}
 instance Show a => Show (Permutation a) where
     show (Permute cs) = foldMap show cs
 
+instance (Read a, Ord a) => Read (Permutation a) where
+    -- this probably can't work with Permutations of Cycles or of Permutations
+    -- because of the limitations of the instance for Cycle
+    readsPrec _ input = [(Permute s, str) | (s,str) <- parse input]
+        where parse "" = [(empty, "")]
+              parse str = reads str >>= (\(c, rest) -> [(insert c s, str) | (s,str) <- parse rest])
+
 cyclicPermutation :: Cycle a -> Permutation a
 cyclicPermutation = Permute . singleton
 
