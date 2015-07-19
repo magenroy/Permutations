@@ -33,8 +33,16 @@ cycleLength (Cycle c) = length c
 cycleGenericLength :: Num n => Cycle a -> n
 cycleGenericLength (Cycle c) = genericLength c
 
+
 instance Show a => Show (Cycle a) where
     show (Cycle xs) = "(" ++ unwords (map show xs) ++ ")" -- is this efficient?
+
+instance Read a => Read (Cycle a) where
+    -- can't parse Cycle of Cycles
+    readsPrec _ ('(':input) = [(Cycle xs, str) | (xs, str) <- parse input]
+        where parse (')':rest) = [([], rest)]
+              parse str = reads str >>= (\(v, rest) -> [(v:xs, str) | (xs, str) <- parse rest])
+    readsPrec _ _ = []
 
 instance Eq a => Eq (Cycle a) where
     Cycle [] == Cycle [] = True
